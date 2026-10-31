@@ -2,7 +2,7 @@
 
 [← Back to overview](../README.md) · [User guide](user-guide.md) · [Testing overview](testing-overview.md)
 
-Rowzen helps prepare CSV datasets for database import. It separates **deterministic checks** from **AI-assisted suggestions** and keeps record changes under user control.
+Rowzen prepares CSV datasets for database imports through deterministic validation, controlled corrections, visual analysis, and AI-assisted recommendations. **The validation engine, not an AI model, determines whether configured rules pass or fail.**
 
 ## Six-step workspace
 
@@ -11,62 +11,56 @@ Rowzen helps prepare CSV datasets for database import. It separates **determinis
 - Select or drag and drop CSV files.
 - Work with **up to five CSV files**, each **up to 1 MB**, in the full workspace.
 - Inspect parsed datasets and receive feedback on invalid input.
-- Keep raw CSV records in the browser rather than persisting them in Rowzen's application database by default.
+- Keep raw CSV records in the browser instead of persisting them in Rowzen's application database by default.
 
-The public `/rehearsal` demo supports a smaller scenario involving one or two CSV files.
+The public `/rehearsal` demo supports one or two CSV files.
 
 ### 2. Configure the expected schema
 
 Users specify the rules that imported data should satisfy:
 
-- Source column to target field mapping.
+- Source-column-to-target-field mapping.
 - Expected data types and required fields.
 - Primary keys, including composite keys.
 - Uniqueness constraints.
 - Foreign keys and cross-dataset relationships.
 - Reusable, project-owned mapping templates.
 
-An optional schema mapping assistant can suggest mappings or highlight possible drift. Suggestions require user review; they are not automatically applied.
+The **Schema Mapping & Drift Detection** assistant suggests mappings and possible schema differences for the user to review before applying changes.
 
 ### 3. Validate with a deterministic engine
-
-Rowzen checks configured rules against uploaded records, including:
 
 | Validation area | What it helps detect |
 |---|---|
 | Required values | Missing values in required columns |
 | Types | Values incompatible with configured field types |
 | Primary and unique keys | Duplicated or invalid identifiers and uniqueness conflicts |
-| Foreign keys | References to records not present in related uploaded datasets |
+| Foreign keys | References absent from related uploaded datasets |
 | Relationship configuration | Invalid or incompatible relationship definitions |
 | Dependency analysis | Cycles and constraints on the recommended import order |
 
-Results come from the deterministic validation engine, not from AI judgments. A readiness result only reflects the checks performed and configured rules.
+Validation results are reproducible and independent of AI suggestions. Readiness reflects the configured rules and checks actually performed.
 
 ### 4. Review findings and relationships
-
-The review workspace includes:
 
 - Summary cards and dataset-level metrics.
 - Issue Explorer with search, filtering, and pagination.
 - Error distribution charts and dataset analytics.
-- A dependency graph showing relationships and import-order guidance.
-- A separate schema/entity-relationship diagram for fields, keys, and relationships.
+- Dependency graph with relationship and import-order guidance.
+- Separate schema/entity-relationship diagram showing fields, keys, and relationships.
 
-The optional Root-Cause & Impact Analyzer suggests explanations grounded in available validation evidence. These explanations are hypotheses, not confirmed causal findings.
+The **Root-Cause & Impact Analyzer** adds evidence-linked hypotheses to help investigate existing findings. Possible causes are presented separately from verified validation facts.
 
 ### 5. Correct and revalidate
-
-Supported correction tools include:
 
 - Inline cell editing and original-versus-current values.
 - Undo and redo with correction activity history.
 - Deterministic **What-If** previews before committing a candidate change.
-- Automatic revalidation and updated results after approved changes.
+- Automatic revalidation after approved corrections.
 
-The optional **Verified Smart Repair Planner** proposes a strategy. The application resolves and checks a candidate through its existing deterministic rules, shows a preview, and requires explicit approval. “Verified” does not mean business correctness is guaranteed.
+The **Verified Smart Repair Planner** proposes a strategy. Rowzen checks a candidate with its deterministic engine, displays the before/after preview, and requires explicit user approval. A validated preview does not guarantee the candidate reflects the intended business value.
 
-### 6. Export the artifacts you need
+### 6. Export artifacts
 
 | Export | Documented output |
 |---|---|
@@ -77,38 +71,46 @@ The optional **Verified Smart Repair Planner** proposes a strategy. The applicat
 | MongoDB | Collection definitions and optional JSONL records |
 | Schema diagram | SVG |
 
-Exports are generated files. Rowzen does **not** connect to or execute imports on the target database.
+Exports are generated files. Rowzen **does not connect to or execute imports on the target database**.
 
 ## Accounts, projects, and history
 
-- Sign in with GitHub or Google, subject to provider configuration.
+- Sign in with GitHub or Google.
 - Create, edit, and delete projects.
 - Save and reuse project-owned mapping templates.
 - Save validation-run summaries and revisit report history.
 - Access private project and report resources through authenticated, ownership-checked server operations.
 
-**Persistence boundary:** Project metadata, mappings, relationship configuration, templates, and validation summaries may be stored in PostgreSQL. Raw CSV rows and local correction activity are not stored there by default. Reopening a saved summary does not restore the uploaded CSV workspace.
+**Persistence boundary:** Project metadata, mappings, relationship configuration, templates, and validation summaries can be stored in PostgreSQL. Raw CSV rows and local correction activity are not stored there by default. Reopening a saved summary does not restore the uploaded CSV workspace.
 
-## AI assistance: capabilities and boundaries
+## AI features and inference options
 
-| Assistant | Step | User-controlled outcome |
+| Assistant | Step | What the user reviews |
 |---|---|---|
-| Schema Mapping & Drift Detection | Configure | Review suggestions before applying mappings |
-| Root-Cause & Impact Analyzer | Review | Inspect evidence-linked explanations and investigate findings |
-| Verified Smart Repair Planner | Correct | Preview a candidate with What-If and approve or dismiss |
+| **Schema Mapping & Drift Detection** | Configure | Suggested mappings and possible schema differences before Apply |
+| **Root-Cause & Impact Analyzer** | Review | Explanations tied to validation evidence and related findings |
+| **Verified Smart Repair Planner** | Correct | Suggested strategy, What-If comparison, and explicit Apply/Dismiss decision |
 
-The supplied application README describes typed AI contracts, response validation, explicit user consent, cancellation, and protection against stale responses. It documents **Groq** as a hosted provider and **Ollama** as a local provider. Hosted inference still depends on provider availability and configuration; its successful operation on the deployed site was not established in the supplied evidence.
+### Hosted inference: Groq
 
-## Design and data-handling principles
+The deployed Rowzen application uses a **Groq-hosted AI provider** through a server-side inference route. The project's documented implementation uses structured input/output contracts, validates model responses, and applies shared request rate limits. Users can access the deployed AI features without installing Ollama.
 
-- Preflight before importing: no direct database writes to the intended target.
-- Deterministic results remain the source of truth for configured validation rules.
-- Raw CSV rows are processed in browser memory.
-- AI requests use selected metadata after explicit consent, rather than raw CSV records.
-- No automatic application of AI-suggested corrections.
-- Accessible visualizations, responsive layouts, and light/dark presentation are part of the documented UI.
+**Current status:** The maintainer confirms that the three AI features work on the deployed application following production integration fixes. External provider outages or rate limits can still affect individual requests.
 
-## Product boundaries
+### Local inference: Ollama
 
-Rowzen does not simulate every database constraint, live transaction, or external target-database state. It does not guarantee a successful import. The supplied README does not describe a working GraphQL export interface.
+The application also supports **Ollama** for local development. Earlier documented supported models include `qwen2.5:0.5b` and `qwen2.5:1.5b`, subject to the application's active model allowlist. Running local AI requires the selected model and Ollama service on the user's device.
 
+### User control and safety
+
+- AI requests use selected metadata after explicit consent, rather than sending raw CSV rows by default.
+- Responses are checked against typed contracts and available evidence.
+- Cancellation and stale-result handling protect the current workspace.
+- Suggestions never silently change mappings or records.
+- Core validation, manual correction, reports, and exports remain usable when AI is unavailable.
+
+For step-by-step instructions, see the [User guide](user-guide.md).
+
+## Design and product boundaries
+
+Rowzen provides responsive interfaces, light/dark appearance, and accessible data visualizations. It does not simulate every database constraint, live transaction, or external database state. A preflight result cannot guarantee a successful import. A GraphQL export interface is not documented as available.

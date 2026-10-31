@@ -2,111 +2,139 @@
 
 [← Back to overview](../README.md) · [Features](features.md) · [Testing overview](testing-overview.md)
 
-Use Rowzen to identify potential CSV import problems, correct supported issues, and download preparation files **before** importing data into a database.
+Use Rowzen to find potential CSV import problems, review relationships, correct supported issues, and download preparation files **before** importing data into a database.
 
-**Open the app:** [rowzen.vercel.app](https://rowzen.vercel.app)
+**Open the deployed application:** [rowzen.vercel.app](https://rowzen.vercel.app)
 
 ## Choose how to start
 
-**Quick trial:** Open the public [rehearsal demo](https://rowzen.vercel.app/rehearsal). It supports a limited scenario with **one or two CSV files** and does not require sign-in.
+**Quick trial:** Open the public [rehearsal demo](https://rowzen.vercel.app/rehearsal). It supports one or two CSV files without sign-in.
 
-**Full workspace:** Sign in with an available GitHub or Google provider. Open **Projects** to create or select a project, then enter its workspace. The full workspace supports **up to five CSV files, 1 MB each**.
+**Full workspace:** Sign in with GitHub or Google, open **Projects**, create or select a project, and enter its workspace. The full workspace supports up to five CSV files, 1 MB each.
 
-The steps below describe the workflow, not fixed button labels; controls may change as the interface evolves.
+The steps below describe the workflow rather than promising exact button labels for every interface state.
 
 ## Step 1: Upload files
 
-1. Open the workspace's **Upload** step.
+1. Open **Upload** in your workspace.
 2. Select CSV files using the file picker or drag-and-drop area.
-3. Check parsing feedback and preview the detected datasets.
-4. Fix rejected file inputs before proceeding.
+3. Review parsing feedback and preview the datasets.
+4. Correct rejected inputs before continuing.
 
-**Example:** Upload `customers.csv` and `orders.csv` to rehearse an import where orders reference customers. Use synthetic sample data when demonstrating the product publicly.
+**Example:** Upload `customers.csv` and `orders.csv` to rehearse a relationship where orders reference customers. Use sample or synthetic data for public demonstrations.
 
 ## Step 2: Configure mappings and rules
 
-For each dataset:
+1. Review the source column names and intended target fields for each dataset.
+2. Configure expected data types and required fields.
+3. Set primary or unique keys where needed.
+4. Define foreign key relationships between uploaded datasets.
+5. Review and apply the final configuration.
 
-1. Review the source column names and their intended target fields.
-2. Configure expected data types and mark required fields.
-3. Set primary or unique keys when applicable.
-4. Define foreign keys that refer to another uploaded dataset.
-5. Review the configuration before applying it.
+**Example:** `customers.customer_id` identifies a customer, while `orders.customer_id` references that identifier. If an order refers to a missing customer, the validation engine can report it.
 
-**Example configuration:** `customers.customer_id` is the customer identifier; `orders.customer_id` refers to it. If an order refers to a customer ID absent from `customers.csv`, the foreign-key check can surface the problem.
+You can save or reuse project-owned mapping templates.
 
-You can reuse project-owned mapping templates where available. Optional AI mapping suggestions should be reviewed before applying changes.
+### Use AI Schema Mapping & Drift Detection on the deployed app
+
+1. Open [Rowzen](https://rowzen.vercel.app) and sign in.
+2. Open your project and go to **Configure**.
+3. Choose the dataset and review its mapping configuration.
+4. Open **Schema Mapping & Drift Detection** and start an analysis using the available action.
+5. Review any consent notice, then request suggestions.
+6. Compare suggested source/target fields and possible drift against your intended schema.
+7. Apply only the mappings you approve; discard unsuitable suggestions.
+
+The deployed app uses hosted **Groq** inference, so you do **not** need Ollama installed on your computer to use this feature.
 
 ## Step 3: Run validation
 
-Go to **Validate** and run the configured preflight checks.
+Go to **Validate** and run the configured preflight checks. Rowzen evaluates required values, data types, keys, references, and dependency configuration.
 
-Rowzen evaluates required values, types, keys, references, and dependency configuration. A blocked or warning state means review is needed; it is not an indication that a database import has already occurred.
+A blocked or warning state means review is required. It does not mean a database import has occurred.
 
-## Step 4: Review issues
+## Step 4: Review issues and investigate causes
 
 In **Review**:
 
-- Start with the summary and readiness information.
-- Use Issue Explorer to find and filter particular problems.
-- Inspect dataset analytics and the distribution of errors.
-- Explore the dependency graph for import ordering and cycles.
-- Inspect the schema diagram to check how fields and relationships are represented.
+- Start with the validation summary and readiness status.
+- Use Issue Explorer to find and filter individual problems.
+- Inspect dataset analytics and error distribution.
+- Explore the dependency graph for ordering and cycles.
+- Inspect the schema diagram for fields and relationships.
 
-Where available, use **Root-Cause & Impact Analyzer** for supplementary evidence-linked explanations. Treat these as possible explanations, not verified causes or replacement validation results.
+### Use AI Root-Cause & Impact Analyzer on the deployed app
+
+1. Run validation and open **Review**.
+2. Select or focus on a relevant finding, where available.
+3. Open **Root-Cause & Impact Analyzer** and request an analysis after reviewing any consent notice.
+4. Read the proposed explanations and follow the linked supporting evidence.
+5. Inspect related issues and dependencies to decide what to investigate next.
+
+AI-generated causes and impacts are **hypotheses**, not independently confirmed causes. The deterministic results remain unchanged by the analysis.
 
 ## Step 5: Correct problems safely
 
-1. Navigate to the affected dataset or cell using the issue details and correction workspace.
-2. Check the original value before editing.
-3. Enter an intended correction, or review an optional AI repair strategy.
-4. Use **What-If** to inspect the candidate change against current validation rules when applicable.
-5. Approve only a change you understand, then inspect updated validation results.
-6. Use undo/redo or correction history if you need to reconsider a change.
+1. Navigate to an affected cell using the issue details or correction workspace.
+2. Inspect the original value before changing it.
+3. Make a manual correction, or consider an AI repair strategy.
+4. Use **What-If** to review the candidate against current validation rules when applicable.
+5. Apply only a correction you understand and approve.
+6. Inspect the updated validation results; use undo/redo or correction history if needed.
 
-Do not invent missing IDs or assume a suggested replacement is correct merely because a validation rule accepts it. The intended value may require knowledge outside the uploaded files.
+### Use AI Verified Smart Repair Planner on the deployed app
+
+1. Open **Correct** and focus on a supported issue.
+2. Open **Verified Smart Repair Planner** and request a repair suggestion, accepting any required consent prompt.
+3. Review the proposed strategy. Provide any information the interface requests rather than accepting invented values.
+4. Run the available **What-If preview** for a concrete candidate.
+5. Compare original versus proposed values and the resulting validation findings.
+6. Choose **Apply** only if the change matches your intended data; otherwise cancel or dismiss it.
+7. Confirm automatic revalidation and the updated correction history.
+
+A candidate passing deterministic rules is not proof that its value is correct for your business data.
 
 ## Step 6: Export results
 
-Choose the output appropriate to your next task:
-
 | Need | Export to look for |
 |---|---|
-| Share a validation summary | CSV or JSON report |
-| Continue with corrected rows | Corrected CSV |
-| Prepare relational database artifacts | PostgreSQL or MySQL export |
+| Share validation findings | CSV or JSON report |
+| Continue with corrected records | Corrected CSV |
+| Prepare relational database artifacts | PostgreSQL or MySQL exports |
 | Prepare document database artifacts | MongoDB definitions or JSONL records |
-| Share the visual schema | SVG diagram |
+| Share schema visualization | SVG diagram |
 
-Exports are downloaded artifacts. **Rowzen does not import them into your target database.** Review compatibility and warnings before using them elsewhere.
+Exports are downloaded artifacts. **Rowzen does not import them into your target database.** Review compatibility guidance before using the files elsewhere.
 
-## Save reports and reuse a project
+## Save results and reuse a project
 
-Authenticated users can save supported validation summaries and access them through **Results**. Saved report history helps revisit the outcomes of earlier runs.
+Authenticated users can save supported validation summaries and access them in **Results**. Saved report history helps revisit previous outcomes.
 
-**Important:** A saved summary is not a backup of your CSV records. Raw rows and local corrections are not restored merely by reopening the summary. Keep your original files and corrected exports separately.
+**Important:** A saved summary is not a backup of CSV records. Uploaded rows and local corrections are not restored merely by opening a historical summary. Keep your original files and corrected exports separately.
 
 ## Common questions
 
-**Does Rowzen upload my complete CSV data to its application database?**  
-According to the supplied project README, raw CSV rows are processed in browser memory and are not persisted in PostgreSQL by default. Project configuration and report summaries can be stored.
+**Do the AI features work on the deployed website?**  
+Yes. The maintainer confirms that Schema Mapping & Drift Detection, Root-Cause & Impact Analysis, and Verified Smart Repair work in the deployed Rowzen app. Hosted inference uses Groq and does not require a local Ollama installation.
 
-**Do I need AI to validate files?**  
-No. Validation, manual correction, and exports rely on the deterministic workflow. AI is optional assistance.
+**Do I need to install Ollama?**  
+Not to use the deployed application. Ollama is supported as a separate local inference option for development or locally configured use.
 
-**Why might an AI feature be unavailable?**  
-Hosted inference depends on its configured provider and related services. Local Ollama mode requires a compatible model running on the user's own machine, with suitable browser permissions and origins. An unavailable assistant does not mean the preflight engine stopped working.
+**What if an AI request fails?**  
+Check the displayed error and retry if appropriate. Hosted inference depends on provider availability and request limits. You can still validate datasets, edit records manually, and export results without AI.
 
-**Does “ready” mean a real database import will succeed?**  
-No. It reflects Rowzen's configured preflight checks, not live target database constraints, transaction behavior, or production state.
+**Does Rowzen save my full CSV files to its database?**  
+No. According to the documented design, raw CSV rows are processed in browser memory and are not persisted to PostgreSQL by default. Project metadata and report summaries can be saved.
 
-**Why can't I reopen all rows from an old report?**  
-Saved report history contains summaries, not the complete original dataset or full local correction activity.
+**Does a “ready” status guarantee import success?**  
+No. It reflects configured preflight checks, not live database constraints or transaction behavior.
 
-**What if my CSV file is rejected?**  
-Check the input feedback, CSV format, file count, and 1 MB per-file limit; then retry with a supported file.
+**Why can't I reopen every row from an old report?**  
+Saved history contains summaries, not the full original dataset or correction history.
 
-## Next steps
+**What if a CSV file is rejected?**  
+Review the parser feedback, CSV format, file count, and 1 MB per-file limit, then try again.
 
-See [Features](features.md) for a full capability map and [Testing overview](testing-overview.md) for what the supplied project verification does and does not establish.
+## Further reading
 
+See [Features](features.md) for the full capability map and [Testing overview](testing-overview.md) for the project's verification approach.
